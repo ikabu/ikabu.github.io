@@ -60,6 +60,8 @@ function setUp() {
 
 	titles("Farmer: Protect Your Corn", "(Click to shoot)");
 
+	switchbackAudio(1);
+
 	var time = TITLETIME;
 
 	setTimeout(level1, time);
@@ -67,6 +69,7 @@ function setUp() {
 	time += LEVEL1TIME + 34; // 34 accounts for one extra screen refresh at 30fps
 
 	setTimeout(function () {titles("level 2", "");}, time);
+	setTimeout(function () {switchbackAudio(2);}, time);
 
 	time += TITLETIME;
 
@@ -75,6 +78,7 @@ function setUp() {
 	time += LEVEL2TIME + 34;
 
 	setTimeout(function () {titles("the end", "");}, time);
+	setTimeout(function () {switchbackAudio(3);}, time);
 
 	time += TITLETIME;
 
@@ -82,7 +86,20 @@ function setUp() {
 
 	time += LEVEL3TIME + 34;
 
+	setTimeout(function () {switchbackAudio(4);}, time);
 	setTimeout(setUpEnd, time);
+}
+
+function switchbackAudio(level) {
+	if (level == 1) {
+		backAudio.src = "./Assets/level1.mp3";
+	} else if (level == 2) {
+		backAudio.src = "./Assets/level2.mp3";
+	} else if (level == 3) {
+		backAudio.src = "./Assets/level3.mp3";
+	} else if (level == 4) {
+		backAudio.src = "./Assets/wantyouback_short.mp3";
+	}
 }
 
 function titles(big, small) {
@@ -102,7 +119,6 @@ function titles(big, small) {
 
 function level1() {
 	//Play soundtrack
-	backAudio.src = "./Assets/level1.mp3";
 	backAudio.play();
 	sfx_gun.src = "./Assets/shotgun.mp3";
 
@@ -135,7 +151,7 @@ function level2() {
 	crow.xpos = -100;
 
 	//Play soundtrack
-	backAudio.src = "./Assets/level2.mp3";
+	// backAudio.src = "./Assets/level2.mp3";
 	backAudio.play();
 	sfx_gun.src = "./Assets/shotgun.mp3";
 	
@@ -145,7 +161,7 @@ function level2() {
 
 function level3() {
 	//Play soundtrack
-	backAudio.src = "./Assets/level3.mp3";
+	// backAudio.src = "./Assets/level3.mp3";
 	backAudio.play();
 	sfx_gun.src = "./Assets/shotgun.mp3";
 	
