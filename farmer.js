@@ -7,6 +7,10 @@ const TITLETIME = 4000;
 var canv = null;
 var context = null;
 
+// Width and height of our background.  Will scale if screen smaller
+var width = 1024;
+var height = 683;
+
 var background = new Image();
 var target = new Image();
 var targetTorn = new Image();
@@ -17,13 +21,14 @@ var sfx_gun = null;
 var sfx_ting = null;
 var sfx_success = null;
 
-var width = 1024;
-var height = 683;
 
 var crow = new bird();
 var albo = new albanese();
 
+// Describes how gun should be handled.  Can be bird, target or something else
 var shot = "bird";
+
+// Transparency used when fading in corn
 var alpha = 0;
 
 window.onload = setUp;
@@ -58,7 +63,7 @@ function setUp() {
 	targetTorn.src = "./Assets/target_torn_small.png";
 	corn.src = "./Assets/corn_small.png";
 
-	titles("Farmer: Protect Your Corn", "(Click to shoot)");
+	titles("Farmer: Protect Your Corn", "(Click to shoot)", TITLETIME);
 
 	switchbackAudio(1);
 
@@ -66,9 +71,9 @@ function setUp() {
 
 	setTimeout(level1, time);
 
-	time += LEVEL1TIME + 34; // 34 accounts for one extra screen refresh at 30fps
+	time += LEVEL1TIME + 34; // 34 allows one extra screen refresh at 30fps
 
-	setTimeout(function () {titles("level 2", "");}, time);
+	setTimeout(function () {titles("level 2", "", TITLETIME);}, time);
 	setTimeout(function () {switchbackAudio(2);}, time);
 
 	time += TITLETIME;
@@ -77,7 +82,7 @@ function setUp() {
 	
 	time += LEVEL2TIME + 34;
 
-	setTimeout(function () {titles("the end", "");}, time);
+	setTimeout(function () {titles("the end", "", TITLETIME);}, time);
 	setTimeout(function () {switchbackAudio(3);}, time);
 
 	time += TITLETIME;
@@ -101,9 +106,15 @@ function switchbackAudio(level) {
 		backAudio.src = "./Assets/wantyouback_short.mp3";
 	}
 }
+function titles(big, small, time) {
+	//Disable gun sound
+	shot = "none";
 
-function titles(big, small) {
-	sfx_gun.src = null;
+	var intervalID = setInterval(function() {titlesDraw(big, small);}, 200);
+	setTimeout(function() {clearInterval(intervalID);}, time);
+}
+
+function titlesDraw(big, small) {
 	context.fillStyle = "#000000";
 	context.fillRect(0, 0, width, height);
 	
@@ -114,13 +125,13 @@ function titles(big, small) {
 	context.fillText(big, width/2, height/2);
 	context.font = "30px Courier New";
 	context.textAlign = "center";
-	context.fillText(small, width/2 + 30, height/2 + 30);
+	context.fillText(small, width/2, height/2 + 30);
 }
 
 function level1() {
 	//Play soundtrack
 	backAudio.play();
-	sfx_gun.src = "./Assets/shotgun.mp3";
+		shot = "bird"; //Re-enable gun sounds
 
 	//Generate crow to draw to screen
 	crow.generate();
@@ -151,9 +162,8 @@ function level2() {
 	crow.xpos = -100;
 
 	//Play soundtrack
-	// backAudio.src = "./Assets/level2.mp3";
 	backAudio.play();
-	sfx_gun.src = "./Assets/shotgun.mp3";
+	shot = "bird";
 	
 	var intervalID = setInterval(function() {level2and3Draw();}, 1000 / FPS);
 	setTimeout(function() {clearInterval(intervalID);}, LEVEL2TIME);
@@ -161,19 +171,11 @@ function level2() {
 
 function level3() {
 	//Play soundtrack
-	// backAudio.src = "./Assets/level3.mp3";
 	backAudio.play();
-	sfx_gun.src = "./Assets/shotgun.mp3";
+	shot = "bird";
 	
-	// albo.xMultiple = 2.9756;
-	// albo.yMultiple = 1.937956;
 	albo.xMultiple = 3.178;
 	albo.yMultiple = 1.929;
-
-	// console.log(albo.xpos + " / " + albo.ypos);
-	// albo.xpos += 150;
-	// albo.ypos -=50;
-	// console.log(albo.xpos + " / " + albo.ypos);
 	albo.rate = 1.0030;
 	albo.currentscale *= 1.2;
 
@@ -183,7 +185,6 @@ function level3() {
 }
 
 function level2and3Draw() {
-
 	//Draw background
 	context.clearRect(0, 0, width, height);
 	context.save();
@@ -201,22 +202,34 @@ function level2and3Draw() {
 
 function setUpEnd() {
 	shot = "target";
-	context.drawImage(target, (width-200)/2, (height-200)/2);
 	sfx_success.play();
+
+	// Draw target multiple times to be on safe side (fuck you Safari)
+	var intervalID = setInterval(setUpEndDraw, 1000 / FPS);
+	setTimeout(function() {clearInterval(intervalID);}, 1000);
+}
+
+function setUpEndDraw() {
+	context.drawImage(target, (width-200)/2, (height-200)/2);
 }
 
 function end() {
+	// Draw torn target again just in case
+	context.drawImage(targetTorn, (width-200)/2, (height-200)/2);
+
 	var intervalID = setInterval(fadeCorn, 1000 / FPS);
 	setTimeout(function() {clearInterval(intervalID);}, 2000);
 	backAudio.src = "./Assets/wantyouback_short.mp3";
 	backAudio.play();
-	setTimeout(function() {titles("Treasure the ones you love", "Also, Satyros meeting Monday 7pm HAG040");}, 8500);
-	setTimeout(function() {titles("","");}, 15500)
-
+	setTimeout(function() {context.globalAlpha = 1; 
+		titles("Treasure the ones you love", 
+			"Also, Satyros meeting Monday 7pm HAG040", 7000);}, 8500);
+	setTimeout(function() {titles("","", 2000);}, 15500)
 }
 
 function fadeCorn() {
-	alpha += 0.01665;
+	alpha += 0.01667;
+	
 	context.globalAlpha = alpha;
 	context.drawImage(corn, (width-100)/2, (height-100)/2);
 }
@@ -302,8 +315,10 @@ function handleMouseDown(event) {
 		x = event.pageX;
 		y = event.pageY;
 	} else {
-		x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-		y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+		x = event.clientX + document.body.scrollLeft + 
+			document.documentElement.scrollLeft;
+		y = event.clientY + document.body.scrollTop + 
+			document.documentElement.scrollTop;
 	}
 
 	x -= canv.offsetLeft;
@@ -313,25 +328,27 @@ function handleMouseDown(event) {
 	if (shot == "target") {
 		sfx_gun.play();
 
-		if (Math.abs(event.clientX - (width / 2) < 100)) {
-			if (Math.abs(event.clientY - (height / 2) < 100)) {
+		if (Math.abs(x - (width / 2)) < 90) {
+			if (Math.abs(y - (height / 2)) < 90) {
 				context.drawImage(targetTorn, (width-200)/2, (height-200)/2);
 				setTimeout(end, 750);
+
+				//Disable future shooting
+				shot = "end";
 			}
 		}
-	} else {
+	} else if (shot == "bird") {
 		// If we're close to the bird it's dead
-		if (Math.abs(event.clientX - crow.xpos) < 45) {
-			if (Math.abs(event.clientY - crow.ypos) < 45) {
-				console.log(event.clientX - crow.xpos)
+		if (Math.abs(x - crow.xpos) < 45) {
+			if (Math.abs(y - crow.ypos) < 45) {
 				sfx_ting.play();
 				crow.generate();
-				// TODO: Add score?
 			}
 		} else {
 			sfx_gun.play();
-		}	
+		} 	
+	} else {  //Non-game moments don't want sound played
+		return;
 	}
-
 }
 
