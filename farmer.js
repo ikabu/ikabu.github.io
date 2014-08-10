@@ -223,7 +223,7 @@ function end() {
 	backAudio.play();
 	setTimeout(function() {context.globalAlpha = 1; 
 		titles("Treasure the ones you love", 
-			"Also, Satyros meeting Monday 7pm HAG040", 7000);}, 8500);
+			"Also, Satyros meeting Monday 7pm HAG053", 7000);}, 8500);
 	setTimeout(function() {titles("","", 2000);}, 15500)
 }
 
